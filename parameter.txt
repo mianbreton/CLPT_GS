@@ -1,0 +1,12 @@
+s_min	 0
+s_max	200
+nbins      100
+fg  1
+f1 1
+f2 0
+sig_shift 0
+alpha_perp_AP 1
+alpha_para_AP 1
+input_dir data/
+
+
