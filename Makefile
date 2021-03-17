@@ -19,10 +19,14 @@ CLPT_INC = $(INCLUDES)
 CLPT_LIB =  $(LIBRARIES) 
 
 
+all: CLPT GS
 
-CLPT: Code_RSD_CLPT.c Code_RSD_GS.c
+CLPT: Code_RSD_CLPT.c 
 	$(CC) Code_RSD_CLPT.c -o CLPT $(CF) $(CLPT_INC) $(CLPT_LIB)
+
+GS: Code_RSD_GS.c
 	$(CC) Code_RSD_GS.c -o GS $(CF) $(CLPT_INC) $(CLPT_LIB)
+
 
 
 clean:
