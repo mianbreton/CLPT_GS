@@ -3,13 +3,30 @@
  CONTRIBUTOR: Michel-Andrès Breton 2020		        
  ========================================
 
-** CLPT **
+This C code implements the CLPT and Gaussian streaming model for redshift-space distortions 
+presented in Reid & White 2011 (https://arxiv.org/pdf/1105.4165.pdf) and Wang, Reid 
+& White 2014 (https://arxiv.org/pdf/1306.1804.pdf). It includes Alcock-Paczynski
+distortions through alpha_perp and alpha_par parameters. The final products are the 
+monopole, quadrupole, and hexadecapole moments of the redshift-space correlation function.   
 
-*Need to create a data/ folder first*
+*** Compilation *** 
 
+In the code folder run:
+make
+
+To build it as a library: 
+make lib
+
+*** CLPT ***
+
+*Need to create a data/ folder to store CLPT predictions*
+
+To get CLPT predictions:
 ./CLPT powerspectrum_file.dat
 
-**Output 
+This has to be done once per input linear power spectrum.
+
+The outputs in the data/ folder include:
 
 ** Xi_L_func.dat 
 | Column | Value                                 |
@@ -52,25 +69,24 @@
 |      9 | \s12_perp_f1f1 	      	 
 
 
+*** Gaussian Streaming for redshift-space distortions ***
 
-** Gaussian Streaming **
-
+The Gaussian streaming predictions are obtained by running:
 ./GS parameter_file.txt
 
-**Parameters file
-smin
-smax
-nbins									
-f (growth rate)				
-f1
-f2
-sig_shift^2
-alpha_perp
-alpha_para					
-input_dir 
+The parameter file contains:
+smin		  -> minimum s scale
+smax		  -> maximum s scale
+nbins		  -> number of bins in s between smin and smax							
+f (growth rate)   -> linear growth rate of structure parameter				
+f1		  -> Lagrangian bias parameter 1
+f2		  -> Lagrangian bias parameter 2
+sig_shift^2	  -> small-scale velocity dispersion squared 
+alpha_perp	  -> Alcock-Paczynski perpendicular distortion parameter
+alpha_para	  -> Alcock-Paczynski parallel distortion parameter				
+input_dir 	  -> input directory where CLPT predictions are stored
 
-**Output 
-										 
+The output is stored in the data/ folder in the file:
 
 *** multipoles_CLPT.dat :
 | Column | Value                                 
@@ -79,13 +95,7 @@ input_dir
 |      2 | $\xi_0											 
 |      3 | $\xi_2 		                               				
 |      4 | $\xi_4			                     	       
-			                     	       	
-	
-To compile : 
-make
-To build a library : 
-make lib
-
+			                     	       
 
 ** Contact
 For any question, please send an email to michel-andres.breton@lam.fr
