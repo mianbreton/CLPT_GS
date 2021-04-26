@@ -16,11 +16,12 @@
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_spline.h>
 #include <time.h>
+
+#define r_max 250
 /************************************************************************************************************************************************************************/
 /************************************************************************************************************************************************************************/
 
                         //VARIABLE GLOBALE
-const int r_max = 250;								// Maximum scale for CLPT (see Code_RSD_CLPT.c)
 const double y_spanning = 50;						        // Spanning for streaming model
 gsl_interp_accel *acc[4];
 gsl_spline *spline[4];
@@ -33,6 +34,9 @@ double				fg,						// growth factor
 				alpha_perp_AP,					// alpha_perp for AP test
 				alpha_para_AP;					// alpha_para for AP test
 int nbins;								        // Number of bin in s
+double Xi_x[r_max], Xi_f0[r_max], Xi_f1[r_max], Xi_f2[r_max], Xi_f1_2[r_max], Xi_f1_f2[r_max], Xi_f2_2[r_max],
+       V12_x[r_max], V12_f0[r_max], V12_f1[r_max], V12_f2[r_max], V12_f1_2[r_max], V12_f1_f2[r_max],
+       S_x[r_max], S_par_f0[r_max], S_par_f1[r_max], S_par_f2[r_max], S_par_f1_2[r_max], S_per_f0[r_max], S_per_f1[r_max], S_per_f2[r_max], S_per_f1_2[r_max];
 struct my_f_params { double a; double b; };
 struct my_f_params3 { double a; double b; double c;};
 
@@ -289,49 +293,37 @@ void interpole(int n, char ficher[100],int vmax)
         gsl_spline_init (spline[n], T_x, T_y, vmax);
 }
 
-void interpole_Xi(char* input_dir)
+void read_Xi(char* input_dir)
 {
 	FILE *fxi;
     	char dir_tmp[BUFSIZ];
     	strcpy(dir_tmp, input_dir);
 	char *name = "/Xi_r_CLPT.dat";
 	strcat(dir_tmp, name);
-	double Xi_x[r_max], Xi_f0[r_max], Xi_f1[r_max], Xi_f2[r_max], Xi_f1_2[r_max], Xi_f1_f2[r_max], Xi_f2_2[r_max], Xi_all[r_max];
 	fxi = fopen(dir_tmp, "r");
 	for(int i=0; i < r_max; i++){
 	    fscanf(fxi, "%lf %lf %lf %lf %lf %lf %lf\n",&Xi_x[i], &Xi_f0[i], &Xi_f1[i], &Xi_f2[i], &Xi_f1_2[i], &Xi_f1_f2[i], &Xi_f2_2[i]); 
-	    Xi_all[i] = Xi_f0[i] + f1*Xi_f1[i] + f2*Xi_f2[i] + f1*f1*Xi_f1_2[i] + f1*f2*Xi_f1_f2[i] + f2*f2*Xi_f2_2[i];
 	}
         fclose(fxi);
-	acc[0] = gsl_interp_accel_alloc ();
-	spline[0] = gsl_spline_alloc(gsl_interp_cspline, r_max);
-	gsl_spline_init (spline[0], Xi_x, Xi_all, r_max);
 }
 
-void interpole_V12(char* input_dir)
+void read_V12(char* input_dir)
 {
 	FILE *fv12;
     	char dir_tmp[BUFSIZ];
     	strcpy(dir_tmp, input_dir);
 	char *name = "/V_12_CLPT.dat";
 	strcat(dir_tmp, name);
-	double V12_x[r_max], V12_f0[r_max], V12_f1[r_max], V12_f2[r_max], V12_f1_2[r_max], V12_f1_f2[r_max], V12_all[r_max];
 	
 	fv12 = fopen(dir_tmp, "r");
 	for(int i=0; i < r_max; i++){
 	    fscanf(fv12, "%lf %lf %lf %lf %lf %lf\n",&V12_x[i], &V12_f0[i], &V12_f1[i], &V12_f2[i], &V12_f1_2[i], &V12_f1_f2[i]);
-	    V12_all[i] = V12_f0[i] + f1*V12_f1[i] + f2*V12_f2[i] + f1*f1*V12_f1_2[i] + f1*f2*V12_f1_f2[i];
 	}
         fclose(fv12);
-	acc[1] = gsl_interp_accel_alloc ();
-	spline[1] = gsl_spline_alloc(gsl_interp_cspline, r_max);
-	gsl_spline_init (spline[1], V12_x, V12_all, r_max);
 }
 
-
-void interpole_sigma(char* input_dir)
-{	
-	double S_x[r_max], S_par_f0[r_max], S_par_f1[r_max], S_par_f2[r_max], S_par_f1_2[r_max], S_per_f0[r_max], S_per_f1[r_max], S_per_f2[r_max], S_per_f1_2[r_max], S_par_all[r_max], S_per_all[r_max];
+void read_sigma(char* input_dir)
+{
 	FILE* fsig;
     	char dir_tmp[BUFSIZ];
     	strcpy(dir_tmp, input_dir);
@@ -341,10 +333,43 @@ void interpole_sigma(char* input_dir)
    	fsig = fopen(dir_tmp, "r");
 	for(int i=0; i<r_max; i++){
 	    fscanf(fsig, "%lf %lf %lf %lf %lf %lf %lf %lf %lf\n", &S_x[i], &S_par_f0[i], &S_par_f1[i], &S_par_f2[i], &S_par_f1_2[i], &S_per_f0[i], &S_per_f1[i], &S_per_f2[i], &S_per_f1_2[i]);
+	}
+        fclose(fsig);
+}
+
+
+void interpole_Xi()
+{
+	double Xi_all[r_max];
+	for(int i=0; i < r_max; i++){
+	    Xi_all[i] = Xi_f0[i] + f1*Xi_f1[i] + f2*Xi_f2[i] + f1*f1*Xi_f1_2[i] + f1*f2*Xi_f1_f2[i] + f2*f2*Xi_f2_2[i];
+	}
+	acc[0] = gsl_interp_accel_alloc ();
+	spline[0] = gsl_spline_alloc(gsl_interp_cspline, r_max);
+	gsl_spline_init (spline[0], Xi_x, Xi_all, r_max);
+}
+
+void interpole_V12()
+{
+
+	double V12_all[r_max];
+	for(int i=0; i < r_max; i++){
+	    V12_all[i] = V12_f0[i] + f1*V12_f1[i] + f2*V12_f2[i] + f1*f1*V12_f1_2[i] + f1*f2*V12_f1_f2[i];
+	}
+	acc[1] = gsl_interp_accel_alloc ();
+	spline[1] = gsl_spline_alloc(gsl_interp_cspline, r_max);
+	gsl_spline_init (spline[1], V12_x, V12_all, r_max);
+}
+
+
+void interpole_sigma()
+{	
+	double S_par_all[r_max], S_per_all[r_max];
+
+	for(int i=0; i<r_max; i++){
 	    S_par_all[i] = S_par_f0[i] + f1*S_par_f1[i] + f2*S_par_f2[i] + f1*f1*S_par_f1_2[i];
 	    S_per_all[i] = S_per_f0[i] + f1*S_per_f1[i] + f2*S_per_f2[i] + f1*f1*S_per_f1_2[i];
 	}
-        fclose(fsig);
 
 	acc[2] = gsl_interp_accel_alloc ();
 	spline[2] = gsl_spline_alloc(gsl_interp_cspline, r_max);
@@ -355,12 +380,24 @@ void interpole_sigma(char* input_dir)
 	gsl_spline_init (spline[3], S_x, S_per_all, r_max);
 }
 
+void read_moments(char* input_dir)
+{
+    read_Xi(input_dir);
+    read_V12(input_dir);
+    read_sigma(input_dir);	
+}
 
+void interpole_moments()
+{
+    interpole_Xi();
+    interpole_V12();
+    interpole_sigma();	
+}
 
 /************************************************************************************************************************************************************************/
 /***********\\ Compute multipoles CLPT \\*****************************************************************************************************************************/
 
-void compute_multipoles_CLPT(double in_smin, double in_smax, double in_nbins, double out[], double in_fg, double in_f1, double in_f2, double in_sig_shift, double in_alpha_perp_AP, double in_alpha_para_AP, char* input_dir)
+void compute_multipoles_CLPT(double in_smin, double in_smax, double in_nbins, double out[], double in_fg, double in_f1, double in_f2, double in_sig_shift, double in_alpha_perp_AP, double in_alpha_para_AP)
 {
     smin = in_smin;
     smax = in_smax;
@@ -371,15 +408,14 @@ void compute_multipoles_CLPT(double in_smin, double in_smax, double in_nbins, do
     alpha_perp_AP = in_alpha_perp_AP;
     alpha_para_AP = in_alpha_para_AP;
     nbins = in_nbins;
-// Get distributions
-    interpole_Xi(input_dir);
-    interpole_V12(input_dir);
-    interpole_sigma(input_dir);
 
     double ds = (smax - smin)/(nbins-1);
 
     //clock_t begin = clock();
     double out_tmp[3];
+    // Interpole
+    interpole_moments();
+    // Compute
     for(int i=0; i < nbins; i++){ 
 	double spi = smin + i*ds;  
 	multipole_CLPT(spi, alpha_perp_AP, alpha_para_AP, out_tmp);
@@ -421,10 +457,12 @@ void write_multipoles_CLPT(FILE* par)
     fscanf(par,"%*s %lf\n", &alpha_para_AP);
     fscanf(par,"%*s %s\n", input_dir);
 
-		
+// Get distributions
+    read_moments(input_dir);
+	
 // Compute multipoles
     double out[3*nbins];
-    compute_multipoles_CLPT(smin, smax, nbins, out, fg, f1, f2, sig_shift, alpha_perp_AP, alpha_para_AP, input_dir);
+    compute_multipoles_CLPT(smin, smax, nbins, out, fg, f1, f2, sig_shift, alpha_perp_AP, alpha_para_AP);
 
 // Write multipoles
     char dir_tmp[BUFSIZ];
