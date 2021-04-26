@@ -1499,15 +1499,13 @@ double A10_ij (int i, int j, double q)
 }
 
 // Initialize A matrix 
-gsl_matrix *get_M (double q)
+void get_M (double q, gsl_matrix **A)
 {	
-	int i, j;																				
-	gsl_matrix *M = gsl_matrix_calloc (3,3);
-	for (i=0; i<3; i++){		   		
-		for (j=0; j<3;j++) 
-			gsl_matrix_set(M, i, j, Aij(i,j,q));	
-	}
-	return M;
+    int i, j;																				
+    for (i=0; i<3; i++){		   		
+	for (j=0; j<3;j++) 
+	    gsl_matrix_set(*A, i, j, Aij(i,j,q));	
+    }
 }
 
 
@@ -1626,7 +1624,7 @@ double fW_2dot (int i, int n, int m, double q)
 
 // 	Matix A			
 		gsl_permutation *p = gsl_permutation_alloc (3);
-	  	A = get_M(q_n);															//Initialize matix A	    	    			   				   
+	  	get_M(q_n, &A);															//Initialize matix A	    	    			   				   
 	    gsl_linalg_LU_decomp(A, p, &signum); 					
 	    det_A =	gsl_linalg_LU_det(A, signum);					// Determinant of A
 		gsl_linalg_LU_invert(A, p, A_inv); 	    					// Inverse of matrix A 
@@ -1817,7 +1815,7 @@ void write_Xi_R ()
 		
 // 	Matix A			
 	    gsl_permutation *p = gsl_permutation_alloc (3);
-	    A = get_M(q_n);															//Initialize matix A	    	    			   				   
+	    get_M(q_n, &A);															//Initialize matix A	    	    			   				   
 	    gsl_linalg_LU_decomp(A, p, &signum); 					
 	    det_A =	gsl_linalg_LU_det(A, signum);					// Determinant of A
 	    gsl_linalg_LU_invert(A, p, A_inv); 	    					// Inverse of matrix A 
@@ -2018,7 +2016,7 @@ void M_2 (double y, double R, double M2_fin[])
 		
 // 	Matix A			
 		gsl_permutation *p = gsl_permutation_alloc (3);
-	  	A = get_M(q_n);															//Initialize matix A	    	    			   				   
+	  	get_M(q_n, &A);														//Initialize matix A	    	    			   				   
 	    gsl_linalg_LU_decomp(A, p, &signum); 					
 	    det_A =	gsl_linalg_LU_det(A, signum);					// Determinant of A
 		gsl_linalg_LU_invert(A, p, A_inv); 	    					// Inverse of matrix A 
