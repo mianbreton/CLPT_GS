@@ -426,6 +426,12 @@ void compute_multipoles_CLPT(double in_smin, double in_smax, double in_nbins, do
     //clock_t end = clock();
     //double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     //printf("Time spent : %fs\n", time_spent);
+	
+    for (int i=0; i<4; i++){
+    	gsl_spline_free (spline[i]);
+   	gsl_interp_accel_free (acc[i]);
+    }
+	
 
 }
 
@@ -492,10 +498,6 @@ int main (int argc, char *argv[])
     printf("Compute RSD multipoles with CLPT-GS\n");
     write_multipoles_CLPT(par);
 
-    for (int i=0; i<4; i++){
-    	gsl_spline_free (spline[i]);
-   	gsl_interp_accel_free (acc[i]);
-    }
    		
     return 0;
 }
